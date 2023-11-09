@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 class CNNDataset(Dataset):
-    def __init__(self, normalPaths, pneumoniaPaths, transforms, subsample=False):
+    def __init__(self, normalPaths, pneumoniaPaths, transforms=None, subsample=False):
         # store the image and augmentation transforms
         self.normalPaths = normalPaths
         self.pneumoniaPaths = pneumoniaPaths
@@ -27,15 +27,13 @@ class CNNDataset(Dataset):
         imagePath = self.imagePaths[idx]
         # load the image from disk, swap its channels from BGR to RGB,
         # and read the associated mask from disk in grayscale mode
-        image = cv2.imread(imagePath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.imread(imagePath, cv2.IMREAD_GRAYSCALE)
         # check to see if we are applying any transformations
         if self.transforms is not None:
-            # apply the transformations to both image and its mask
             image = self.transforms(image)
-            mask = self.transforms(mask)
-        # return a tuple of the image and its mask
         return (image, self.labels[idx])
     
     def random_subsample(self):
         self.imagePaths = self.normalPaths + np.random.choice(self.pneumoniaPaths, len(self.normalPaths), replace=False).tolist()
+        self.labels = np.ones((len(self.imagePaths)))
+        self.labels[0:len(self.normalPaths)] = 0

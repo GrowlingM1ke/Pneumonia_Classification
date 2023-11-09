@@ -2,7 +2,7 @@
 import torch
 import os
 # base path of the dataset
-DATASET_PATH = os.path.join("archive")
+DATASET_PATH = os.path.join("archive", "chest_xray")
 # define the path to the train, test and validation
 TRAIN_PATH_NORMAL = os.path.join(DATASET_PATH, "train", "NORMAL")
 TRAIN_PATH_PNEUMONIA = os.path.join(DATASET_PATH, "train", "PNEUMONIA")
@@ -24,7 +24,7 @@ NUM_LEVELS = 3
 # batch size
 INIT_LR = 0.001
 NUM_EPOCHS = 50
-BATCH_SIZE = 1
+BATCH_SIZE = 20
 # define the input image dimensions
 INPUT_IMAGE_WIDTH = 512
 INPUT_IMAGE_HEIGHT = 512
