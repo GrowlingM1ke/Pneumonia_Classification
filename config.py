@@ -18,7 +18,7 @@ PIN_MEMORY = True if DEVICE == "cuda" else False
 # initialize learning rate, number of epochs to train for, and the
 # batch size
 INIT_LR = 0.001
-NUM_EPOCHS = 3
+NUM_EPOCHS = 5
 BATCH_SIZE = 20
 # define the input image dimensions
 INPUT_IMAGE_WIDTH = 512

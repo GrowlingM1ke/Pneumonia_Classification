@@ -9,7 +9,6 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import torch
 import time
-import cv2
 from torchvision import transforms
 import numpy as np
 
@@ -34,13 +33,13 @@ if __name__ == '__main__':
 	# create the training and test data loaders
 	trainLoader = DataLoader(trainDS, shuffle=True,
 		batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-		num_workers=12)
+		num_workers=24)
 	testLoader = DataLoader(testDS, shuffle=False,
 		batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-		num_workers=12)
+		num_workers=24)
 	valLoader = DataLoader(valDS, shuffle=False,
 		batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-		num_workers=12)
+		num_workers=24)
 
 	# initialize our CNN model
 	cnn = CNNBasic().to(config.DEVICE)
@@ -64,7 +63,7 @@ if __name__ == '__main__':
 		totalTrainLoss = 0
 		totalValLoss = 0
 		# loop over the training set
-		for (i, (x, y)) in enumerate(trainLoader):
+		for (i, (x, y)) in enumerate(tqdm(trainLoader)):
 			# send the input to the device
 			(x, y) = (x.to(config.DEVICE), y.to(config.DEVICE))
 			# perform a forward pass and calculate the training loss
@@ -78,6 +77,7 @@ if __name__ == '__main__':
 			opt.step()
 			# add the loss to the total training loss so far
 			totalTrainLoss += loss
+		trainLoader.dataset.random_subsample()
 		# switch off autograd
 		with torch.no_grad():
 			# set the model in evaluation mode
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 	plt.style.use("ggplot")
 	plt.figure()
 	plt.plot(H["train_loss"], label="train_loss")
-	plt.plot(H["test_loss"], label="test_loss")
+	plt.plot(H["val_loss"], label="val_loss")
 	plt.title("Training Loss on Dataset")
 	plt.xlabel("Epoch #")
 	plt.ylabel("Loss")

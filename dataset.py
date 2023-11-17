@@ -9,6 +9,7 @@ class CNNDataset(Dataset):
         self.normalPaths = normalPaths
         self.pneumoniaPaths = pneumoniaPaths
         self.transforms = transforms
+        self.subsample = subsample
         
         if not subsample:
             self.imagePaths = self.normalPaths + self.pneumoniaPaths
@@ -34,6 +35,7 @@ class CNNDataset(Dataset):
         return (image, self.labels[idx])
     
     def random_subsample(self):
-        self.imagePaths = self.normalPaths + np.random.choice(self.pneumoniaPaths, len(self.normalPaths), replace=False).tolist()
-        self.labels = np.ones((len(self.imagePaths)))
-        self.labels[0:len(self.normalPaths)] = 0
+        if self.subsample:
+            self.imagePaths = self.normalPaths + np.random.choice(self.pneumoniaPaths, len(self.normalPaths), replace=False).tolist()
+            self.labels = np.ones((len(self.imagePaths)))
+            self.labels[0:len(self.normalPaths)] = 0
