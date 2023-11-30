@@ -11,6 +11,8 @@ import torch
 import time
 from torchvision import transforms
 import numpy as np
+from sklearn.metrics import f1_score, roc_auc_score, roc_curve
+from sklearn.model_selection import train_test_split
 
 if __name__ == '__main__': 
 	# load the image and mask filepaths in a sorted manner
@@ -25,6 +27,19 @@ if __name__ == '__main__':
 		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH)),
 		transforms.ToTensor()])
+	
+	# Combine all the paths together into one and create our own splits
+	normal_paths = train_normal_paths + test_normal_paths + val_normal_paths
+	pneumonia_paths = train_pneumonia_paths + test_pneumonia_paths + val_pneumonia_paths
+
+	# Train test split
+	train_normal_paths, test_normal_paths = train_test_split(train_normal_paths, test_size=config.TEST_SIZE, random_state=42)
+	train_pneumonia_paths, test_pneumonia_paths = train_test_split(train_pneumonia_paths, test_size=config.TEST_SIZE, random_state=42)
+
+	# Train val split
+	train_normal_paths, val_normal_paths = train_test_split(train_normal_paths, test_size=config.VAL_SIZE, random_state=42)
+	train_pneumonia_paths, val_pneumonia_paths = train_test_split(train_pneumonia_paths, test_size=config.VAL_SIZE, random_state=42)
+
 
 	# create the train and test datasets
 	trainDS = CNNDataset(normalPaths=train_normal_paths, pneumoniaPaths=train_pneumonia_paths, transforms=transforms, subsample=True)
@@ -117,3 +132,40 @@ if __name__ == '__main__':
 	plt.savefig(config.PLOT_PATH)
 	# serialize the model to disk
 	torch.save(cnn, config.MODEL_PATH)
+
+	# Start testing
+	cnn.eval()
+	# initialize lists to store predictions and ground-truth
+	preds = []
+	gt = []
+	# switch off autograd
+	with torch.no_grad():
+		# loop over the test set
+		for (x, y) in tqdm(testLoader):
+			# send the input to the device
+			x = x.to(config.DEVICE)
+			# make the predictions and add them to the list
+			pred = cnn(x)
+			pred = torch.sigmoid(pred)
+			pred = pred.cpu().detach().numpy()
+			preds.extend(pred)
+			# add the ground-truth to the list
+			gt.extend(y.numpy())
+	# calculate the F1 score and AUC ROC score
+	preds = np.array(preds)
+	gt = np.array(gt)
+	f1 = f1_score(gt, preds.round())
+	print("[INFO] F1 score: {:.4f}".format(f1))
+	# calculate the AUC ROC score
+	auc = roc_auc_score(gt, preds)
+	print("[INFO] AUC ROC score: {:.4f}".format(auc))
+	# Visualize ROC
+	fpr, tpr, _ = roc_curve(gt, preds)
+	plt.style.use("ggplot")
+	plt.figure()
+	plt.plot(fpr, tpr, label="ROC curve")
+	plt.title("ROC Curve")
+	plt.xlabel("False Positive Rate")
+	plt.ylabel("True Positive Rate")
+	plt.legend(loc="lower right")
+	plt.savefig("roc.png")

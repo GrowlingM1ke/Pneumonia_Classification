@@ -32,3 +32,6 @@ BASE_OUTPUT = "output"
 MODEL_PATH = os.path.join(BASE_OUTPUT, "cnn_pneumonia.pth")
 PLOT_PATH = os.path.sep.join([BASE_OUTPUT, "plot.png"])
 TEST_PATHS = os.path.sep.join([BASE_OUTPUT, "test_paths.txt"])
+
+TEST_SIZE = 0.1
+VAL_SIZE = 0.1
