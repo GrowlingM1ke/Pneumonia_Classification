@@ -11,7 +11,7 @@ import torch
 import time
 from torchvision import transforms
 import numpy as np
-from sklearn.metrics import f1_score, roc_auc_score, roc_curve
+from sklearn.metrics import f1_score, roc_auc_score, roc_curve, precision_score, recall_score, confusion_matrix, accuracy_score, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 
 if __name__ == '__main__': 
@@ -151,9 +151,29 @@ if __name__ == '__main__':
 			preds.extend(pred)
 			# add the ground-truth to the list
 			gt.extend(y.numpy())
-	# calculate the F1 score and AUC ROC score
+	
 	preds = np.array(preds)
 	gt = np.array(gt)
+	# calculate the accuracy
+	acc = accuracy_score(gt, preds.round())
+	print("[INFO] Accuracy: {:.4f}".format(acc))
+	# calculate Precision and Recall per class
+	precision = precision_score(gt, preds.round())
+	recall = recall_score(gt, preds.round())
+	print("[INFO] Pneumonia Precision: {:.4f}".format(precision))
+	print("[INFO] Pneumonia Recall: {:.4f}".format(recall))
+	# precision and recall for other class
+	precision = precision_score(gt, preds.round(), pos_label=0)
+	recall = recall_score(gt, preds.round(), pos_label=0)
+	print("[INFO] Normal Precision: {:.4f}".format(precision))
+	print("[INFO] Normal Recall: {:.4f}".format(recall))
+	# Get confusion Matrix plot
+	cm = confusion_matrix(gt, preds.round())
+	disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Normal", "Pneumonia"])
+	# Save confusion matrix plot
+	disp.plot()
+	plt.savefig("confusion_matrix.png")	
+	# calculate the F1 score and AUC ROC score	
 	f1 = f1_score(gt, preds.round())
 	print("[INFO] F1 score: {:.4f}".format(f1))
 	# calculate the AUC ROC score
